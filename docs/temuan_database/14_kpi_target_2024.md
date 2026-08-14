@@ -134,3 +134,13 @@ Meskipun join berhasil, tabel target punya 3 limitasi struktural:
 ---
 
 Lanjut ke [15_gap_belum_ditemukan.md](15_gap_belum_ditemukan.md).
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — kolom target: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/85-target-capaian.md`.
+
+Halaman itu menyebut nama tabel `target_balai` dan kunci join-nya, lalu berhenti — padahal dokumen ini sudah memuat grain balai × komoditi, batas tahun, dan ketujuh kolom target dengan benar. Untuk domain ini kolom yang relevan adalah `target_penandaan`; enam kolom lain milik kegiatan lain dan tidak boleh dipakai.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.

@@ -168,3 +168,13 @@ Satu trx_step bisa menghasilkan beberapa state. **Jangan campur** keduanya.
 ---
 
 Lanjut ke [06_penilaian_keputusan.md](06_penilaian_keputusan.md).
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — kode tahap log: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/30-status-dan-alur.md`.
+
+Halaman context tidak menyebut `status_code` sama sekali. Domain ini punya beberapa nilai tahap yang tidak muncul di domain lain, dan blok kode penolakannya terpisah jauh dari blok kode tahap normal — pemisahan itulah yang membuat pertanyaan "berapa yang ditolak dan di tahap mana" bisa dijawab.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.

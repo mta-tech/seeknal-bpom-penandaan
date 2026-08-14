@@ -168,3 +168,99 @@ TRIM(REGEXP_REPLACE(produsen, '\s{2,}', ' ', 'g'))
 ---
 
 Lanjut ke [12_kode_berstruktur.md](12_kode_berstruktur.md).
+
+---
+
+# Konsistensi penulisan nilai dan anomali tanggal
+
+> Diverifikasi langsung ke warehouse, 14 Agustus 2026. Bagian ini menjawab satu pertanyaan: **apakah ada
+> nilai yang maksudnya sama tetapi ditulis berbeda**, dan **apakah ada lubang atau tanggal mustahil
+> pada rentang waktunya**. Seluruh isinya khusus domain ini.
+
+Metodenya: tiap kolom berkode dinormalkan berlapis — rapatkan spasi, samakan besar-kecil huruf,
+buang tanda baca, lalu kanonikkan angka (`5`, `5.0`, dan `05` dianggap satu). Nilai mentah yang
+jatuh ke bentuk normal yang sama berarti **kembaran palsu**: dua baris berbeda di `GROUP BY`
+padahal satu makna.
+
+## K1. `kesimpulan_penilaian_balai` — satu gradasi, dua kapitalisasi
+
+| Nilai tersimpan | Baris |
+|---|---|
+| `TMK MINOR` | 7.425 |
+| `TMK Minor` | 1.900 |
+
+Varian minoritas adalah **20% dari keluarga TMK MINOR** — bukan sisa yang bisa diabaikan.
+Memfilter dengan `= 'TMK MINOR'` membuang seperlimanya; memfilter dengan `= 'TMK Minor'` membuang
+empat perlimanya. Keduanya menghasilkan angka yang terlihat masuk akal.
+
+Defek identik ada di `mv_penandaan_agg.kesimpulan_penilaian_balai`.
+
+**Aturan:** keluarga TMK **wajib** dicocokkan dengan pola awalan **dan** tanpa peduli besar-kecil
+huruf — `upper(kesimpulan_penilaian_balai) LIKE 'TMK%'` — bukan dengan kesamaan persis.
+
+## K2. `trx_steps` — satu baris salah ketik di antara setengah juta
+
+| Nilai | Baris |
+|---|---|
+| `spv_1` | 516.654 |
+| `spv1` | **1** |
+
+Satu baris tanpa garis bawah. Dampaknya kecil pada agregat, tetapi ia **menambah satu nilai palsu**
+ke daftar tahap alur, dan setiap pemetaan tahap yang dibuat dari `SELECT DISTINCT trx_steps` akan
+memuat langkah yang sebenarnya tidak ada.
+
+**Aturan:** saat menyusun daftar tahap, abaikan nilai bervolume sangat kecil yang merupakan varian
+penulisan dari nilai bervolume besar.
+
+## K3. `pendaftar` — spasi ganda setelah bentuk badan usaha
+
+Kolom nama pendaftar memuat puluhan kembaran yang lahir dari spasi ganda sesudah `PT` atau `CV`:
+
+| Contoh | Baris |
+|---|---|
+| `PT SOHO INDUSTRI PHARMASI` versus `PT  SOHO INDUSTRI PHARMASI` | 1.060 vs 3 |
+| `PT ULTRA SAKTI` versus `PT  ULTRA SAKTI` | 823 vs 84 |
+| `PT DUA KELINCI` versus `PT  DUA KELINCI` | 191 vs 1 |
+| `PT TIRTA ALAM SEGAR` versus `PT  TIRTA ALAM SEGAR` | 126 vs 1 |
+| `CV  MANNA INDO LAKTA` versus `CV   MANNA INDO LAKTA` | 6 vs 2 |
+
+Ditemukan **46 grup kembaran** semacam ini. Sebagian nilai juga berspasi di ujung
+(`RAFINS `, `PT IKAPHARMINDO PUTRAMAS TBK `, `  SAMICHSAN MULIA`).
+
+**Aturan:** cacah perusahaan unik dan peringkat pendaftar dari kolom ini **terlalu tinggi** tanpa
+normalisasi `btrim(regexp_replace(pendaftar, '\s+', ' ', 'g'))`. Sebutkan bahwa varian penulisan
+digabungkan bila pertanyaannya menyangkut peringkat atau jumlah perusahaan.
+
+## K4. Spasi ekor pada nama balai — filter kesamaan persis gagal
+
+`BALAI POM DI DUMAI ` tersimpan dengan spasi di belakang di `mv_penandaan`, `mv_penandaan_agg`, dan
+`mv_penandaan_log`. Karena konsisten, join tetap jalan; yang gagal adalah filter literal
+`nama_balai = 'BALAI POM DI DUMAI'` — nol baris, tanpa pesan kesalahan.
+
+**Aturan:** filter kesamaan persis pada nama balai harus lewat `trim()`.
+
+## K5. Nama pelaku di log — kembaran karena gelar
+
+`mv_penandaan_log.fullname` memuat orang yang sama dengan penulisan gelar berbeda
+(`Eka Akhriana, S.Farm, Apt` 750 versus `Eka Akhriana, S.Farm., Apt.` 241), dan ada nilai berspasi
+ekor (`Redo Rizaldi ` 92 baris). Peringkat berbasis nama orang dari kolom ini terpecah.
+
+## K6. Anomali tanggal
+
+| Kolom | Temuan |
+|---|---|
+| `mv_penandaan_timeline.tgl_start` | `1970-01-01` sebanyak **6.353 baris** (epoch, pengganti kosong); satu baris 1907; satu baris 2032 |
+| `mv_penandaan_timeline.tgl_end` | `1970-01-01` sebanyak **6.353 baris**; satu baris 2032 |
+| `mv_penandaan.ed_nie` | tahun terpotong `1026`-`1028`; tahun kacau `1747`, `2102`-`2127`, `2225`, `2227`, `2929`; serta 1924-1929 |
+
+Epoch `1970-01-01` di kolom timeline adalah temuan terpenting di sini: **6.353 baris** bukan jumlah
+yang bisa diabaikan, dan karena ia tanggal yang sah secara tipe data, ia **ikut terhitung** dalam
+`MIN()`, dalam selisih durasi, dan dalam `GROUP BY` tahun. Durasi yang dihitung dari baris itu akan
+bernilai puluhan ribu hari.
+
+Catatan soal `ed_nie`: tahun 2027-2056 **wajar** karena ini tanggal berakhirnya nomor izin edar,
+yang memang jatuh di masa depan. Yang anomali adalah tahun terpotong dan tahun mustahil di atas.
+
+**Aturan:** setiap perhitungan durasi dari kolom timeline wajib membuang `1970-01-01` lebih dulu,
+dan pertanyaan "paling awal / paling lama" wajib membatasi tahun ke rentang wajar. Rentang
+operasional sesungguhnya dimulai **2020**.

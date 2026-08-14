@@ -171,3 +171,13 @@ Ukur aktual: `tanggal_kirim_pusat - tgl_start` (rata-rata nasional **14,9 hari**
 ---
 
 Lanjut ke [10_geografi_kapasitas.md](10_geografi_kapasitas.md).
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — kolom tahap timeline: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/50-waktu-dan-durasi.md`.
+
+Halaman itu menyebut nama tabel tanpa menyebut satu pun kolom tahapnya — `tanggal_kirim_kabalai`, `tanggal_kirim_pusat`, `tanggal_kirim_direktur`, `mulai_kabalai`, `kabalai_direktur`, `direktur_pusat`. Keenamnya dipakai SQL sistem lama, dan keenamnya hilang dari context. Ini kelompok regresi terbesar di domain ini. Kekosongannya deterministik, sehingga rata-rata durasi yang menyertakan baris kosong akan salah — dan karena porsi kosongnya besar, salahnya besar.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.
