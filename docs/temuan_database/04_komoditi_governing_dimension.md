@@ -132,3 +132,51 @@ Komoditi adalah **governing dimension** — variabel penentu yang mengontrol:
 ---
 
 Lanjut ke [05_workflow_state_machine.md](05_workflow_state_machine.md).
+
+---
+
+## Populasi yang Sah Dibandingkan per Komoditi (verifikasi 2026-08-13)
+
+Tabel di §atas sudah mencatat "OBAT & ROKOK: balai 100% skip". Konsekuensi analitiknya perlu
+dinyatakan sebagai angka, karena **pertanyaan tersering domain ini adalah pertanyaan gap**
+(17× di log KAI: *"data gap hasil pengawasan penandaan obat antara pusat dan UPT"*).
+
+Gap hanya terdefinisi bila **balai sudah menilai** DAN **pusat sudah berkeputusan** (bukan `VP`,
+yang merupakan tahap menunggu — lihat `06_penilaian_keputusan.md`):
+
+```sql
+SELECT komoditi, count(*) AS n,
+       count(*) FILTER (WHERE kesimpulan_penilaian_balai <> ''
+                          AND kesimpulan_penilaian_pusat NOT IN ('','VP')) AS bisa_dibandingkan,
+       count(*) FILTER (WHERE kesimpulan_penilaian_balai <> ''
+                          AND kesimpulan_penilaian_pusat NOT IN ('','VP')
+                          AND kesimpulan_penilaian_balai <> kesimpulan_penilaian_pusat) AS beda
+FROM mv_penandaan GROUP BY 1 ORDER BY 3 DESC;
+```
+
+| Komoditi | Baris | Bisa dibandingkan | Benar-benar beda | % beda dari yang dibandingkan |
+|---|--:|--:|--:|--:|
+| KOSMETIKA | 78.550 | 74.436 | **6.336** | 8,5% |
+| OBAT TRADISIONAL (OT) | 39.189 | 38.537 | 643 | 1,7% |
+| PRODUK PANGAN | 75.629 | 21.443 | 374 | 1,7% |
+| SUPLEMEN KESEHATAN | 10.757 | 10.607 | 109 | 1,0% |
+| OBAT KUASI | 2.688 | 2.646 | 28 | 1,1% |
+| KEMASAN PANGAN | 689 | 2 | 0 | — |
+| **OBAT** | 53.175 | **0** | **0** | **tidak terdefinisi** |
+| **ROKOK** | 32.081 | **0** | **0** | **tidak terdefinisi** |
+
+Tiga hal yang langsung terbaca:
+
+1. **OBAT dan ROKOK: gap tidak terdefinisi.** Bukan "nol gap" — memang tidak ada penilaian balai
+   untuk dibandingkan. Pertanyaan gap untuk OBAT harus dijawab dengan menyatakan batas ini, bukan
+   dengan angka.
+2. **PRODUK PANGAN kehilangan 71%** populasinya karena `VP` (54.186 dari 75.629). Angka gap 374
+   berlaku atas 21.443 baris yang sudah berkeputusan, bukan atas seluruh pangan.
+3. **KOSMETIKA adalah satu-satunya komoditi dengan gap material** (6.336 baris, 8,5%). Kalau user
+   bertanya "gap penandaan" tanpa menyebut komoditi, inilah yang mendominasi jawabannya — dan itu
+   harus disebut, bukan disajikan sebagai angka nasional.
+
+> ⚠️ **Jebakan `IS NOT NULL`.** Sentinel di kedua kolom kesimpulan adalah **string kosong `''`**,
+> bukan SQL NULL. `WHERE kesimpulan_penilaian_balai IS NOT NULL` **tidak menyaring apa pun** — dan
+> karena `'' <> 'TMK'` bernilai TRUE, SQL yang memakai pola itu melaporkan seluruh 48.122 baris
+> OBAT ber-`pusat='TMK'` sebagai "gap". Bukti lengkap: `21_sql_pairs_penandaan.md` §21.D.

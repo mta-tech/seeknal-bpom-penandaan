@@ -142,3 +142,25 @@ WAREHOUSE_URL=postgresql://postgres:***@localhost:5533/penandaan
 ---
 
 Lanjut ke [03_anatomi_per_tabel.md](03_anatomi_per_tabel.md) untuk detail kolom per tabel.
+
+---
+
+## Batas Domain: istilah yang TIDAK boleh dibawa dari/ke domain lain
+
+Diverifikasi live 2026-08-13 terhadap keempat database BPOM.
+
+| Konsep | Di `penandaan` | Di domain lain | Risiko kalau disamakan |
+|---|---|---|---|
+| **Vonis** | `_balai` (6 nilai, termasuk **`TMK Minor` mixed-case terpisah**) · `_pusat` (5 nilai, termasuk **`VP`**) | pengawasan punya 3 kolom dan `TMK KRITIKAL`; pemeriksaan `kesimpulan` (MK/TMK/TDP/TTP/TMBB); pengujian MS/TMS | `VP` **hanya ada di sini**. `TMK KRITIKAL` tidak ada di sini. `TDP`/`TTP` milik pemeriksaan |
+| **Sentinel** | **string kosong `''`** | pemeriksaan `'NULL'`; pengawasan & pengujian `'Null'` | `IS NOT NULL` **tidak menyaring `''`** — ini penyebab gap palsu 48.122 baris (§21.D di `21_sql_pairs_penandaan.md`) |
+| **Status** | `bigint` 0–14 · 991–997 · 999 | pengawasan 0–9/990–996/999; pengujian 0–21; pemeriksaan `text` | ruang kode mirip pengawasan tapi **tidak identik** (penandaan punya 12, 14, 997; pengawasan punya 8, 9, 990) |
+| **Label status** | `status_label` **meminjam kamus domain pengujian** — `direktur` berlabel *"Penguji - Entri Hasil Pengujian"* | pengawasan juga meminjam sebagian; pengujian memakai kamusnya sendiri secara sah | pakai **`trx_steps`**, bukan `status_label`, untuk menceritakan alur penandaan |
+| **Komoditi** | 8 nilai (satu-satunya yang memakai `KEMASAN PANGAN` secara berarti: 689 baris) | pengawasan 7; pemeriksaan 13 dengan ejaan lain; pengujian 12 | jangan salin daftar antar domain |
+| **Tanggal bisnis** | `tgl_start`/`tgl_end` (2023-01-01 → 2026-08-12) | pemeriksaan sejak 2019/2020; pengujian sejak 2019 | tren lintas domain tidak setara |
+| **Grain** | `id` unik penuh (292.758) — `COUNT(*)` sah | pengawasan `id` berulang (multi-produk); pengujian `id_sampling` unik | aturan `COUNT(DISTINCT id)` dari pengawasan tidak perlu di sini |
+| **Geografi** | **tidak ada** `provinsi`/`kabupaten` (15 kolom) | pemeriksaan & pengujian punya keduanya | pertanyaan geografi produsen = NOT COVERED |
+| **Kemasan** | **tidak ada** kolom jenis/nama kemasan | — | 4 pertanyaan CSV + 8× pertanyaan user = NOT COVERED |
+
+**Aturan praktis:** domain ini hanya memuat **penilaian penandaan/label produk**. Pertanyaan
+tentang *iklan* (media, lokasi, klausul) adalah domain **pengawasan**; tentang *sarana* dan
+*temuan produk* adalah **pemeriksaan**; tentang *hasil uji laboratorium* adalah **pengujian**.

@@ -153,3 +153,91 @@ Berbeda dari sistem ERBA (semua TEXT), di database `penandaan` semua kolom `mv_p
 ---
 
 Lanjut ke [04_komoditi_governing_dimension.md](04_komoditi_governing_dimension.md).
+
+---
+
+## Katalog Nilai Penuh (live 2026-08-13, 292.758 baris)
+
+`GROUP BY` penuh atas seluruh baris. Beberapa angka berbeda dari profil awal karena ETL terus
+menambah baris; yang penting adalah **struktur nilainya**.
+
+### `kesimpulan_penilaian_balai` — 6 nilai, dan dua di antaranya nilai yang sama 🔴
+
+| Nilai | Baris | % |
+|---|--:|--:|
+| `MK` | 177.440 | 60,6 |
+| **`''` (kosong)** | **85.257** | **29,1** |
+| `TMK` | 14.140 | 4,8 |
+| `TMK MINOR` | 7.424 | 2,5 |
+| `TMK MAYOR` | 6.607 | 2,3 |
+| **`TMK Minor`** | **1.890** | **0,6** |
+
+⚠️ **`TMK Minor` (huruf kecil) adalah entri terpisah dari `TMK MINOR`.** Filter
+`kesimpulan_penilaian_balai = 'TMK MINOR'` **melewatkan 1.890 baris** (20,3% dari seluruh TMK
+Minor). Pakai `upper(kesimpulan_penilaian_balai)` atau `ILIKE 'TMK MINOR'`.
+
+Kolom `kesimpulan_penilaian_pusat` **tidak** punya masalah ini — 5 nilai bersih:
+`MK` 151.777 · `TMK` 76.547 · `VP` 59.831 · `TMK MAYOR` 2.367 · `TMK MINOR` 2.236.
+
+**Asimetri taksonomi:** balai punya 5 nilai vonis + kosong; pusat punya 5 nilai termasuk `VP`
+yang tidak pernah dipakai balai. Jadi "TMK family" berbeda di kedua sisi:
+`balai ∈ {TMK, TMK MAYOR, TMK MINOR, TMK Minor}` · `pusat ∈ {TMK, TMK MAYOR, TMK MINOR}`.
+
+### Kosongnya `_balai` = OBAT + ROKOK, tepat
+
+85.257 baris kosong ≈ OBAT (53.175) + ROKOK (32.081) = 85.256, ditambah 1 baris PRODUK PANGAN.
+Jadi kekosongan itu **deterministik per komoditi**, bukan tersebar. Konsekuensi analitiknya:
+`04_komoditi_governing_dimension.md` §Populasi yang Sah Dibandingkan.
+
+### `komoditi` — 8 nilai (satu-satunya domain dengan `KEMASAN PANGAN` terpakai)
+
+`KOSMETIKA` 78.550 · `PRODUK PANGAN` 75.629 · `OBAT` 53.175 · `OBAT TRADISIONAL (OT)` 39.189 ·
+`ROKOK` 32.081 · `SUPLEMEN KESEHATAN` 10.757 · `OBAT KUASI` 2.688 · `KEMASAN PANGAN` 689.
+
+Domain `pengawasan` punya 7 (tanpa `KEMASAN PANGAN`); `pemeriksaan` punya 13 dengan ejaan berbeda
+(`KOSMETIK`, `OBAT TRADISIONAL`). Jangan menyalin daftar komoditi antar domain.
+
+### `mv_penandaan_log` — label status **dipinjam dari domain pengujian** 🟡
+
+| `trx_steps` | Baris | `status_label` | Baris |
+|---|--:|---|--:|
+| `draft` | 576.586 | `Operator - Draft Sampling` | 576.135 |
+| `pusat` | 536.586 | `MT - Pembuatan SPK` | 536.084 |
+| `spv_1` | 516.563 | `Supervisor - Verifikasi` | 518.409 |
+| `kepala_balai` | 489.702 | `TPS - Penerimaan SPU` | 490.508 |
+| `spv_1_pusat` | 359.921 | `Deputi MT - Pembuatan SPK` | 359.974 |
+| `direktur` | 354.181 | `Penguji - Entri Hasil Pengujian` | 354.065 |
+| `selesai` | 350.804 | `Sampel Rujukan Selesai` | 350.735 |
+| `spv_2_pusat` | 251.602 | `Penyelia - Pembuatan SPP` | 251.411 |
+| `spv_2` | 56.843 | `Supervisor 2 - Verifikasi` | 56.841 |
+| 6 langkah `ditolak_*` | 42.174 | `<SQL NULL>` | 40.020 |
+| `receive_tps` · `spv1` · NULL | 10 | `Operator - Perbaikan Sampel` · `Kepala Balai` | 793 |
+
+**`status_label` di domain penandaan menyalin kamus label domain pengujian.** Langkah `direktur`
+berlabel *"Penguji - Entri Hasil Pengujian"*, `kepala_balai` berlabel *"TPS - Penerimaan SPU"*,
+`selesai` berlabel *"Sampel Rujukan Selesai"* — semuanya istilah alur **sampling/pengujian**, bukan
+penandaan. Labelnya salah domain.
+
+**Aturan:** untuk menceritakan alur penandaan, pakai **`trx_steps`**, jangan `status_label`.
+Yang terakhir akan menghasilkan kalimat seperti "laporan penandaan masuk tahap Penguji - Entri
+Hasil Pengujian", yang tidak masuk akal bagi pengguna.
+
+Perhatikan juga **`spv1`** (1 baris, tanpa garis bawah) terpisah dari `spv_1` (516.563) — salah
+ketik yang menjadi nilai tersendiri.
+
+### Filter yang tersedia per tabel
+
+| Tabel | Dimensi filter | Ukuran |
+|---|---|---|
+| `mv_penandaan` | `komoditi` (8) · `nama_balai` · `kesimpulan_penilaian_balai` (6) · `kesimpulan_penilaian_pusat` (5) · `tgl_start`/`tgl_end` · `ed_nie` · `pendaftar` · `produsen` · `catatan` | 292.758 baris, `id` unik |
+| `mv_penandaan_log` | `trx_steps` (19) · `status_code` (20) · `status_label` (12) · `fullname` | 3.533.765 baris · 500.820 id |
+| `mv_penandaan_timeline` | `status` (18) · 3 tanggal milestone · 3 kolom durasi | 500.820 baris |
+| `mv_penandaan_agg` | `komoditi` · `nama_balai` · 2 kolom verdict · `periode_type` (2) | 94.737 baris |
+| `coverage_balai` | `nama_balai` (88) · `kabupaten_kota` (514) | 668 baris |
+| `target_balai` | `nama_balai` (76) · `komoditi` (7, **Title Case**) · `tahun` (**2024 saja**) | 532 baris |
+
+⚠️ **`provinsi` dan `kabupaten` TIDAK ADA** di `mv_penandaan` (15 kolom). Kolom keduanya masih
+tercatat di `table_descriptions` KAI generasi `_all_v2` — sudah dihapus di live. Geografi hanya
+lewat `nama_balai` → `coverage_balai` (wilayah kerja balai, bukan alamat produsen).
+
+⚠️ **Tidak ada kolom jenis/nama kemasan.** Lihat `20_gap_schema_user.md` G1.

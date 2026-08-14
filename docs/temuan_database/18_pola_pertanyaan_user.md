@@ -236,3 +236,62 @@ paling baik menjawab dari [06_penilaian_keputusan](06_penilaian_keputusan.md).
 ---
 
 Lanjut ke [19_mapping_konsep_ke_schema.md](19_mapping_konsep_ke_schema.md) untuk pemetaan istilah → kolom.
+
+---
+
+## Batch pertanyaan tambahan — diuji ke DB live 2026-08-14
+
+| Pertanyaan | Pemetaan | Catatan hasil |
+|---|---|---|
+| UPT paling banyak kesimpulan **UPT** MK | `kesimpulan_penilaian_balai='MK'` | jalan — tapi hanya sah untuk komoditi yang balainya menilai |
+| Top 5 UPT kesimpulan **UPT** TMK | `upper(balai) LIKE 'TMK%'` | ⚠️ `= 'TMK'` melewatkan MAYOR/MINOR dan varian huruf kecil |
+| Sarana produksi OT/SK/OK dengan hasil **pusat** TMK | `produsen` + `komoditi` + `pusat LIKE 'TMK%'` | jalan |
+| **Gap penandaan OBAT pusat vs UPT 2025** | uji ketersediaan | ⛔ **tidak terdefinisi** — lihat di bawah |
+| **Kategori produk** dengan TMK tertinggi | tidak ada kolom kategori | proksi terdekat `komoditi`; **bukan hal yang sama** |
+| Total penandaan Juli 2025 | rentang `tgl_start` | ⚠️ **dua jawaban sah** (penandaan vs surat) |
+| UPT tidak input catatan TMK | `catatan` sentinel `''` | anti-join kosong → sajikan sebagai **peringkat porsi** |
+| Data OT/SK/OK **kategori + klaim promosi/iklan** | uji kolom | ⛔ **tidak ada kolomnya** |
+| Urutkan **nama kemasan** TMK terbanyak | uji kolom | ⛔ **tidak ada kolomnya** |
+
+### ⛔ Gap penandaan OBAT: pertanyaan tersering, dan tidak terdefinisi
+
+```sql
+SELECT komoditi, count(*) AS baris,
+       count(*) FILTER (WHERE kesimpulan_penilaian_balai <> '') AS balai_terisi,
+       count(*) FILTER (WHERE kesimpulan_penilaian_balai <> ''
+                          AND kesimpulan_penilaian_pusat NOT IN ('','VP')
+                          AND kesimpulan_penilaian_balai <> kesimpulan_penilaian_pusat) AS gap_sah
+FROM mv_penandaan WHERE komoditi='OBAT' AND extract(year FROM tgl_start)=2025 GROUP BY 1;
+```
+
+Barisnya ada, **`balai_terisi` nol, `gap_sah` nol**. Untuk komoditi OBAT (dan ROKOK) UPT memang
+tidak pernah merekam penilaian — jadi "gap antara pusat dan UPT" **tidak punya definisi**, bukan
+"nol perbedaan". Rinciannya di `04_komoditi_governing_dimension.md`.
+
+Jawaban yang benar menyebut batas ini. Jawaban yang memakai `IS NOT NULL` justru melaporkan seluruh
+baris OBAT sebagai "gap" — lihat `21_sql_pairs_penandaan.md` §21.D.
+
+### ⛔ Tiga pertanyaan meminta kolom yang tidak ada
+
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_schema='public' AND table_name='mv_penandaan'
+  AND (column_name ILIKE '%kategori%' OR column_name ILIKE '%klaim%'
+       OR column_name ILIKE '%iklan%'  OR column_name ILIKE '%kemasan%');
+--  (0 baris)
+```
+
+| Diminta | Ada? | Bahaya kalau dipaksakan |
+|---|---|---|
+| **jenis/nama kemasan** | tidak | jatuh ke `nama_produk` → yang muncul nama obat, bukan kemasan |
+| **kategori produk** | tidak | jatuh ke `komoditi` → cakupannya jauh lebih luas |
+| **klaim dalam promosi/iklan** | tidak | domain iklan ada di database `pengawasan`, bukan di sini |
+
+Ketiganya **P5 NOT COVERED**. Yang paling menyesatkan adalah "nama kemasan": query-nya jalan,
+hasilnya rapi, dan pembaca tidak punya cara tahu bahwa yang ditampilkan bukan kemasan.
+
+### ⚠️ "Total penandaan Juli 2025" — sebutkan entity-nya
+
+`COUNT(*)` dan `COUNT(DISTINCT id)` memberi angka sama (id unik penuh di tabel ini), tetapi
+`COUNT(DISTINCT nomor_surat)` jauh lebih kecil — satu surat memuat banyak penandaan. Keduanya sah;
+sebutkan yang dipakai.

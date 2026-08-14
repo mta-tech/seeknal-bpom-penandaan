@@ -1,0 +1,33 @@
+{
+  "database": "penandaan",
+  "tanggal_eksekusi": "2026-08-13",
+  "pair_context_stores": {
+    "total": 43,
+    "ok_sesudah": 40,
+    "persen_ok": 93,
+    "status_sebelum": {
+      "ERR_SCHEMA": 24,
+      "OK": 19
+    },
+    "status_sesudah": {
+      "OK": 40,
+      "NOL_BARIS": 2,
+      "ERR_SCHEMA": 1
+    },
+    "diagnosa": {
+      "PULIH_RELASI": 21,
+      "NOL_FILTER_SEMPIT": 2,
+      "ERR_KOLOM_DIHAPUS": 1,
+      "OK_LANGSUNG": 18,
+      "OK_TAPI_RAKSASA": 1
+    }
+  },
+  "csv_sql_training": {
+    "total": 8,
+    "ok": 7,
+    "hasil": {
+      "OK": 7,
+      "ERR_SCHEMA": 1
+    }
+  }
+}
