@@ -1,0 +1,15 @@
+name: TC_PND_KOSONG_KESIMPULAN_PENILAIAN_BALAI
+scenario_id: TC-PND-KOSONG-KESIMPULAN-PENILAIAN-BALAI
+verification_date: '2026-08-14'
+description: 'Keterisian `kesimpulan_penilaian_balai`; menguji penanganan penanda kosong yang lebih dari satu bentuk.'
+turns:
+- prompt: 'berapa penandaan yang belum punya kesimpulan penilaian balai?'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '85.315'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE kesimpulan_penilaian_balai IS NULL OR btrim(kesimpulan_penilaian_balai) = '''';
+    
+    HASIL DB 14Agu2026 = 85.315 kosong, 207.629 terisi. PENANDA KOSONG: kolom ini memakai lebih dari satu bentuk kosong, sehingga `IS NULL` saja TIDAK cukup — string kosong juga harus dihitung. Itulah sebabnya SQL di atas memakai `IS NULL OR btrim(...) = ''''`. MAKNA KOSONG: periksa apakah kosongnya acak atau menandai sebuah kelompok; bila deterministik, menyaring ''yang terisi'' diam-diam membuang kelompok itu.'

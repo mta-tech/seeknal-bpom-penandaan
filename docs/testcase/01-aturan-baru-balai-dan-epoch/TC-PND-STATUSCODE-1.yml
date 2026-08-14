@@ -1,0 +1,16 @@
+name: TC_PND_STATUSCODE_1
+scenario_id: TC-PND-STATUSCODE-1
+verification_date: '2026-08-14'
+description: 'TC-PND-STATUSCODE-1 — Kode tahap log terbagi dua blok; jalur penolakan dikenali dari blok, bukan satu nilai.'
+turns:
+- prompt: 'berapa berkas penandaan yang pernah ditolak?'
+  assert_contains:
+  - 'tolak'
+  assert_any_of:
+  -
+    - '360.940'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(DISTINCT id_penandaan) FROM mv_penandaan_log WHERE status_code >= 990 = 360.940. KODE FILTER: `status_code` numerik dan TIDAK berurutan rapat. Blok tahap normal = [0, 1, 2, 3, 4, 5, 6, 7, 12, 14]; blok penolakan/pembatalan = [990, 991, 992, 993, 994, 995, 996, 997, 999] — terpisah jauh. Pemisahan blok itulah yang membuat pertanyaan ''berapa yang ditolak'' bisa dijawab. Jangan menebak nilai mana yang berarti ditolak; ambil daftar nilainya lebih dulu bersama labelnya.;
+    
+    ENTITY: hitung berkas unik, bukan baris log — satu berkas punya banyak baris log. KENAPA MUDAH SALAH: v1 tidak menyebut `status_code` sama sekali.'

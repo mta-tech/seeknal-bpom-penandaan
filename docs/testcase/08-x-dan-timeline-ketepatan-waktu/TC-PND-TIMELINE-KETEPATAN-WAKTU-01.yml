@@ -1,0 +1,17 @@
+name: TC_PND_TIMELINE_KETEPATAN_WAKTU_01
+scenario_id: TC-PND-TIMELINE-KETEPATAN-WAKTU-01
+verification_date: '2026-08-14'
+description: 'TC-PND-TIMELINE-KETEPATAN-WAKTU-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan data pemenuhan timeline pengawasan oleh masing-masing UPT yang dapat diukur sejak tanggal pemeriksaan sampai dengan tanggal laporan dikirim ke Pusat oleh kepala UPT'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDA ACEH'
+  assert_any_of:
+  -
+    - '196.200'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.nama_balai, mp.id, mpt.tgl_start, mpt.tanggal_kirim_pusat, (mpt.mulai_kabalai + mpt.kabalai_direktur + mpt.direktur_pusat) as durasi_hari from mv_penandaan mp join mv_penandaan_timeline mpt on mp.id = mpt.id_penandaan where tanggal_kirim_direktur is not null order by 1, 2;
+    
+    DATA YANG DITANYA: mv_penandaan + mv_penandaan_timeline. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. TAPI hasilnya 212,688 baris tanpa agregasi — jalan, bukan jawaban. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 212688 baris; baris teratas ''BALAI BESAR POM DI BANDA ACEH'' dengan nilai 196.200.'

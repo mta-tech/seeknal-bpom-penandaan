@@ -1,0 +1,16 @@
+name: TC_PND_TAHUN_2025
+scenario_id: TC-PND-TAHUN-2025
+verification_date: '2026-08-14'
+description: 'Cacah penandaan untuk satu tahun; menguji pemilihan kolom tanggal kanonik.'
+turns:
+- prompt: 'berapa penandaan pada tahun 2025?'
+  assert_contains:
+  - '2025'
+  assert_any_of:
+  -
+    - '68.902'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE tgl_start >= ''2025-01-01'' AND tgl_start < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 68.902. TANGGAL KANONIK: `tgl_start` di `mv_penandaan` — kolom tanggal default untuk pertanyaan periode. Kolom tanggal lain di tabel ini menjawab pertanyaan berbeda dan angkanya tidak sama. BATAS RENTANG: pakai perbandingan >= dan < , bukan EXTRACT(YEAR ...) di WHERE — tabel ini tanpa indeks, EXTRACT memaksa pemindaian penuh.'

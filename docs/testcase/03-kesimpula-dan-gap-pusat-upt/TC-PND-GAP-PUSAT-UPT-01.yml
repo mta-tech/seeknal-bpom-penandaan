@@ -1,0 +1,17 @@
+name: TC_PND_GAP_PUSAT_UPT_01
+scenario_id: TC-PND-GAP-PUSAT-UPT-01
+verification_date: '2026-08-14'
+description: 'TC-PND-GAP-PUSAT-UPT-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Berdasarkan produsen dua kelinci, tampilkan berapa jumlah label yang dilaporkan MK atau TMK beserta jumlah perbedaan antara kesimpulan balai dengan pusat'
+  assert_contains:
+  - 'PT DUA KELINCI'
+  assert_any_of:
+  -
+    - '191'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.pendaftar, count(*) as total_laporan, sum(case when lower(mp.kesimpulan_penilaian_pusat) = ''mk'' then 1 else 0 end) as jumlah_mk_pusat, sum(case when lower(mp.kesimpulan_penilaian_pusat) = ''tmk'' then 1 else 0 end) as jumlah_tmk_pusat, sum(case when lower(mp.kesimpulan_penilaian_balai) = ''mk'' then 1 else 0 end) as jumlah_mk_balai, sum(case when lower(mp.kesimpulan_penilaian_balai) = ''tmk'' then 1 else 0 end) as jumlah_tmk_balai, sum(case when lower(mp.kesimpulan_penilaian_balai) <> lower(mp.kesimpulan_penilaian_pusat) and mp.kesimpulan_penilaian_balai is not null and mp.kesimpulan_penilaian_pusat is not null then 1 else 0 end) as jumlah_perbedaan_balai_pusat from mv_penandaan mp where lower(mp.pendaftar) like ''%dua kelinci%'' and mp.kesimpulan_penilaian_pusat is not null group by mp.pendaftar order by total_laporan desc;
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 3 baris; baris teratas ''PT DUA KELINCI'' dengan nilai 191.'

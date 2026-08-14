@@ -1,0 +1,17 @@
+name: TC_PND_REKAP_LAPORAN_UPT_04
+scenario_id: TC-PND-REKAP-LAPORAN-UPT-04
+verification_date: '2026-08-14'
+description: 'TC-PND-REKAP-LAPORAN-UPT-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan rekapitulasi jumlah laporan pengawasan penandaan masing-masing UPT yang telah dikirim ke Pusat pada tahun 2025'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDA ACEH'
+  assert_any_of:
+  -
+    - '599'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.nama_balai, mp.kesimpulan_penilaian_pusat, count(*) from mv_penandaan mp where mp.kesimpulan_penilaian_pusat is not null and extract(year from mp.tgl_start) = 2025 group by 1, 2 order by 1, 2;
+    
+    DATA YANG DITANYA: mv_penandaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 229 baris; baris teratas ''BALAI BESAR POM DI BANDA ACEH'' dengan nilai 599.'

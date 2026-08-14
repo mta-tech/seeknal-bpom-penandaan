@@ -1,0 +1,17 @@
+name: TC_PND_X_63169
+scenario_id: TC-PND-X-63169
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa penandaan KOSMETIKA dengan kesimpulan penilaian balai TMK Minor?'
+  assert_contains:
+  - 'KOSMETIKA'
+  - 'TMK Minor'
+  assert_any_of:
+  -
+    - '1.900'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE komoditi = ''KOSMETIKA'' AND kesimpulan_penilaian_balai = ''TMK Minor'';
+    
+    HASIL DB 14Agu2026 = 1.900. DUA KOLOM BERKODE: `komoditi` = ''KOSMETIKA'' dan `kesimpulan_penilaian_balai` = ''TMK Minor''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

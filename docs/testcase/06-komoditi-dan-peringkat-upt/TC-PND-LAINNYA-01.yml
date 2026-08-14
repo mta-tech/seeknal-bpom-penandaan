@@ -1,0 +1,19 @@
+name: TC_PND_LAINNYA_01
+scenario_id: TC-PND-LAINNYA-01
+verification_date: '2026-08-14'
+description: 'TC-PND-LAINNYA-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan data obat tradisional; suplemen kesehatan; obat kuasi hasil pengawasan penandaan yang merupakan kategori obat tradisional; suplemen kesehatan; obat kuasi dan klaim dalam promosi/iklan.'
+  assert_contains:
+  - 'SUPLEMEN KESEHATAN'
+  assert_any_of:
+  -
+    - '52.685'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT * FROM mv_penandaan WHERE lower(komoditi) IN (''obat tradisional (ot)'', ''suplemen kesehatan'', ''obat kuasi'');
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 52685 baris; baris teratas ''SUPLEMEN KESEHATAN'' dengan nilai 390.463.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (52.685), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

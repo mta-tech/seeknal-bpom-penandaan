@@ -1,0 +1,17 @@
+name: TC_PND_PERINGKAT_UPT_05
+scenario_id: TC-PND-PERINGKAT-UPT-05
+verification_date: '2026-08-14'
+description: 'TC-PND-PERINGKAT-UPT-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'urutkan nama kemasan yang memiliki kesimpulan akhir pengawasan penandaan tmk paling banyak sampai dengan paling rendah.'
+  assert_contains:
+  - 'PARACETAMOL'
+  assert_any_of:
+  -
+    - 'PARACETAMOL'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_produk FROM mv_penandaan WHERE kesimpulan_penilaian_pusat = ''TMK'' GROUP BY nama_produk ORDER BY count(*) DESC;
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 15529 baris; baris teratas ''PARACETAMOL''.'

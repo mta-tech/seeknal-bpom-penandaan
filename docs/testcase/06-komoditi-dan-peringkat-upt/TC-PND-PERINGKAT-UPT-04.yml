@@ -1,0 +1,17 @@
+name: TC_PND_PERINGKAT_UPT_04
+scenario_id: TC-PND-PERINGKAT-UPT-04
+verification_date: '2026-08-14'
+description: 'TC-PND-PERINGKAT-UPT-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan urutan data nama sarana produksi dengan hasil pengawasan akhir dari pusat yang memiliki obat tradisional; suplemen kesehatan; obat kuasi dengan penandaan yang tidak memenuhi ketentuan diurut'
+  assert_contains:
+  - 'FUFANG SHILINTONG PIAN'
+  assert_any_of:
+  -
+    - 'FUFANG SHILINTONG PIAN'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_produk FROM mv_penandaan WHERE lower(komoditi) IN (''obat tradisional (ot)'', ''suplemen kesehatan'', ''obat kuasi'') AND kesimpulan_penilaian_pusat = ''TMK'' GROUP BY nama_produk ORDER BY COUNT(*) DESC;
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 2589 baris; baris teratas ''FUFANG SHILINTONG PIAN''.'

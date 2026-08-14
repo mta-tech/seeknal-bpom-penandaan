@@ -1,0 +1,17 @@
+name: TC_PND_REKAP_LAPORAN_UPT_03
+scenario_id: TC-PND-REKAP-LAPORAN-UPT-03
+verification_date: '2026-08-14'
+description: 'TC-PND-REKAP-LAPORAN-UPT-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan rekapitulasi jumlah laporan pengawasan penandaan dengan hasil kesimpulan akhir yaitu tidak memenuhi ketentuan berdasarkan tanggal proses direktur'
+  assert_contains:
+  - 'TMK'
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mpt.tanggal_kirim_direktur, mp.kesimpulan_penilaian_pusat, count(*) from mv_penandaan mp join mv_penandaan_timeline mpt on mp.id = mpt.id_penandaan where mp.kesimpulan_penilaian_pusat is not null and extract(year from mp.tgl_start) = 2025 and mpt.tanggal_kirim_direktur is not null and mp.kesimpulan_penilaian_pusat = ''TMK'' group by 1, 2 order by 1, 2;
+    
+    DATA YANG DITANYA: mv_penandaan + mv_penandaan_timeline + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 214 baris; baris teratas ''TMK'' dengan nilai 1.'

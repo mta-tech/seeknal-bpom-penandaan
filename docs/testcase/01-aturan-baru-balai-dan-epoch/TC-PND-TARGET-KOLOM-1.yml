@@ -1,0 +1,16 @@
+name: TC_PND_TARGET_KOLOM_1
+scenario_id: TC-PND-TARGET-KOLOM-1
+verification_date: '2026-08-14'
+description: 'TC-PND-TARGET-KOLOM-1 — Memilih kolom target yang benar dari tujuh yang tersedia; v1 tidak menyebut satu pun.'
+turns:
+- prompt: 'berapa target pengawasan penandaan nasional?'
+  assert_contains:
+  - 'target'
+  assert_any_of:
+  -
+    - '92.838'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT SUM(target_penandaan) FROM target_balai = 92.838.;
+    
+    KOLOM FILTER: tabel target memuat TUJUH kolom — target_penandaan, target_pengawasan, target_pengujian, target_pengujian_pangan, target_pengujian_pangan_fortifikasi, target_sarana_distribusi, target_sarana_produksi. Untuk domain ini HANYA `target_penandaan` yang sah. GRAIN: 1 baris = 1 balai x 1 komoditi x 1 tahun, jadi total nasional adalah jumlah seluruh baris; menjumlahkan tanpa sadar grain akan melipatgandakan sebanyak jumlah komoditi. CAKUPAN TAHUN: hanya 2024. KENAPA MUDAH SALAH: context v1 menyebut nama tabel lalu berhenti — nol kolom target disebut.'

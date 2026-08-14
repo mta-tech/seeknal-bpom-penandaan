@@ -1,0 +1,17 @@
+name: TC_PND_KOMODITI_552_2024
+scenario_id: TC-PND-KOMODITI-552-2024
+verification_date: '2026-08-14'
+description: 'Silang `komoditi` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa penandaan dengan komoditi PRODUK PANGAN pada tahun 2024?'
+  assert_contains:
+  - 'PRODUK PANGAN'
+  - '2024'
+  assert_any_of:
+  -
+    - '23.762'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE komoditi = ''PRODUK PANGAN'' AND tgl_start >= ''2024-01-01'' AND tgl_start < ''2025-01-01'';
+    
+    HASIL DB 14Agu2026 = 23.762. KOLOM: `komoditi` di `mv_penandaan`. NILAI FILTER ''PRODUK PANGAN'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

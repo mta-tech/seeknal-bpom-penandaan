@@ -1,0 +1,17 @@
+name: TC_PND_X_41794
+scenario_id: TC-PND-X-41794
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa penandaan OBAT KUASI dengan kesimpulan penilaian balai MK?'
+  assert_contains:
+  - 'OBAT KUASI'
+  - 'MK'
+  assert_any_of:
+  -
+    - '2.508'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE komoditi = ''OBAT KUASI'' AND kesimpulan_penilaian_balai = ''MK'';
+    
+    HASIL DB 14Agu2026 = 2.508. DUA KOLOM BERKODE: `komoditi` = ''OBAT KUASI'' dan `kesimpulan_penilaian_balai` = ''MK''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

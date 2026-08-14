@@ -1,0 +1,17 @@
+name: TC_PND_X_21858
+scenario_id: TC-PND-X-21858
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa penandaan PRODUK PANGAN dengan kesimpulan penilaian balai TMK MINOR?'
+  assert_contains:
+  - 'PRODUK PANGAN'
+  - 'TMK MINOR'
+  assert_any_of:
+  -
+    - '7.379'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE komoditi = ''PRODUK PANGAN'' AND kesimpulan_penilaian_balai = ''TMK MINOR'';
+    
+    HASIL DB 14Agu2026 = 7.379. DUA KOLOM BERKODE: `komoditi` = ''PRODUK PANGAN'' dan `kesimpulan_penilaian_balai` = ''TMK MINOR''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

@@ -1,0 +1,16 @@
+name: TC_PND_KOMODITI_004
+scenario_id: TC-PND-KOMODITI-004
+verification_date: '2026-08-14'
+description: 'Cacah penandaan untuk satu nilai `komoditi`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa penandaan dengan komoditi ROKOK?'
+  assert_contains:
+  - 'ROKOK'
+  assert_any_of:
+  -
+    - '32.093'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE komoditi = ''ROKOK'';
+    
+    HASIL DB 14Agu2026 = 32.093. KOLOM: `komoditi` di `mv_penandaan`. NILAI FILTER: ''ROKOK'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

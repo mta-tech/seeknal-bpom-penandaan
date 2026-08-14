@@ -1,0 +1,17 @@
+name: TC_PND_TIMELINE_KETEPATAN_WAKTU_02
+scenario_id: TC-PND-TIMELINE-KETEPATAN-WAKTU-02
+verification_date: '2026-08-14'
+description: 'TC-PND-TIMELINE-KETEPATAN-WAKTU-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan jumlah label tepat waktu yang telah dikirimkan ke pusat pada UPT tertentu pada tahun 2025 Hasil pengawasan label dikirimkan ke pusat maksimal tanggal 15 bulan berikutnya'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDA ACEH'
+  assert_any_of:
+  -
+    - '1.440'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_balai, COUNT(*) AS jumlah_laporan, SUM( CASE WHEN mpt.tanggal_kirim_kabalai < (DATE_TRUNC(''month'', mp.tgl_start) + INTERVAL ''1 month'' + INTERVAL ''14 day'') THEN 1 ELSE 0 END ) AS laporan_tepat_waktu, ROUND( SUM( CASE WHEN mpt.tanggal_kirim_kabalai < (DATE_TRUNC(''month'', mp.tgl_start) + INTERVAL ''1 month'' + INTERVAL ''14 day'') THEN 1 ELSE 0 END )::DECIMAL / COUNT(*) * 100, 2 ) AS persentase_tepat_waktu FROM mv_penandaan mp JOIN mv_penandaan_timeline mpt ON mp.id = mpt.id_penandaan WHERE EXTRACT(YEAR FROM mpt.tanggal_kirim_kabalai) = 2025 GROUP BY mp.nama_balai ORDER BY mp.nama_balai;
+    
+    DATA YANG DITANYA: mv_penandaan + mv_penandaan_timeline + mpt. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 77 baris; baris teratas ''BALAI BESAR POM DI BANDA ACEH'' dengan nilai 1.440.'

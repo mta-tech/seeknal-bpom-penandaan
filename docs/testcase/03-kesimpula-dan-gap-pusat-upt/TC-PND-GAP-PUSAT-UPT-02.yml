@@ -1,0 +1,17 @@
+name: TC_PND_GAP_PUSAT_UPT_02
+scenario_id: TC-PND-GAP-PUSAT-UPT-02
+verification_date: '2026-08-14'
+description: 'TC-PND-GAP-PUSAT-UPT-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan data gap/perbedaan hasil pengawasan penandaan obat antara pusat dan UPT'
+  assert_contains:
+  - 'TMK MAYOR'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.tgl_start, mp.kesimpulan_penilaian_balai, mp.kesimpulan_penilaian_pusat, COUNT(*) AS jumlah_gap FROM mv_penandaan mp WHERE mp.kesimpulan_penilaian_balai IS NOT NULL AND mp.kesimpulan_penilaian_pusat IS NOT NULL AND mp.kesimpulan_penilaian_balai <> mp.kesimpulan_penilaian_pusat GROUP BY mp.tgl_start, mp.kesimpulan_penilaian_balai, mp.kesimpulan_penilaian_pusat ORDER BY mp.tgl_start;
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 6988 baris; baris teratas ''TMK MAYOR'' dengan nilai 2.'

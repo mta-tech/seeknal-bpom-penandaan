@@ -1,0 +1,18 @@
+name: TC_PND_PENDAFTAR_NORM_1
+scenario_id: TC-PND-PENDAFTAR-NORM-1
+verification_date: '2026-08-14'
+description: 'TC-PND-PENDAFTAR-NORM-1 — Cacah perusahaan unik melebihi kenyataan tanpa normalisasi spasi.'
+turns:
+- prompt: 'ada berapa perusahaan pendaftar yang berbeda?'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '4.284'
+  -
+    - '4.329'
+    - 'mentah'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    -- BENAR: dinormalisasi SELECT COUNT(DISTINCT btrim(regexp_replace(pendaftar, ''\s+'', '' '', ''g''))) FROM mv_penandaan; -- NAIF: melebihi kenyataan SELECT COUNT(DISTINCT pendaftar) FROM mv_penandaan; -- melihat kembarannya SELECT btrim(regexp_replace(pendaftar,''\s+'','' '',''g'')) AS norm, COUNT(DISTINCT pendaftar) AS varian FROM mv_penandaan GROUP BY 1 HAVING COUNT(DISTINCT pendaftar) > 1 ORDER BY 2 DESC; SQL BENAR: COUNT(DISTINCT btrim(regexp_replace(pendaftar,''\s+'','' '',''g''))) = 4.284. SQL NAIF: COUNT(DISTINCT pendaftar) = 4.329 — LEBIH TINGGI dari kenyataan.;
+    
+    SEBAB: kembaran penulisan, terutama spasi ganda sesudah bentuk badan usaha (PT diikuti dua spasi alih-alih satu), dan sebagian nilai berspasi di ujung. Satu perusahaan tersimpan sebagai beberapa entri, sehingga cacah perusahaan unik melebihi kenyataan dan peringkat pendaftar terpecah. ATURAN: cacah dan peringkat pendaftar wajib dinormalisasi, dan penggabungan varian disebut di jawaban. KENAPA MUDAH SALAH: v1 tidak menyebut apa pun tentang ini.'

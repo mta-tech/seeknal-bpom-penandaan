@@ -1,0 +1,17 @@
+name: TC_PND_PERINGKAT_UPT_07
+scenario_id: TC-PND-PERINGKAT-UPT-07
+verification_date: '2026-08-14'
+description: 'TC-PND-PERINGKAT-UPT-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'berikan top 5 upt yang paling banyak melaporkan hasil pemeriksaan penandaan dengan kesimpulan upt tidak memenuhi ketentuan?'
+  assert_contains:
+  - 'BALAI BESAR POM DI JAKARTA'
+  assert_any_of:
+  -
+    - '3.166'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_balai, count(*) FROM mv_penandaan WHERE kesimpulan_penilaian_pusat = ''TMK'' GROUP BY nama_balai ORDER BY COUNT(*) DESC LIMIT 5;
+    
+    DATA YANG DITANYA: mv_penandaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''BALAI BESAR POM DI JAKARTA'' dengan nilai 3.166.'

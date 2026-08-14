@@ -1,0 +1,17 @@
+name: TC_PND_KESIMPULA_750_2024
+scenario_id: TC-PND-KESIMPULA-750-2024
+verification_date: '2026-08-14'
+description: 'Silang `kesimpulan_penilaian_balai` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa penandaan dengan kesimpulan penilaian balai TMK MAYOR pada tahun 2024?'
+  assert_contains:
+  - 'TMK MAYOR'
+  - '2024'
+  assert_any_of:
+  -
+    - '2.062'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_penandaan WHERE kesimpulan_penilaian_balai = ''TMK MAYOR'' AND tgl_start >= ''2024-01-01'' AND tgl_start < ''2025-01-01'';
+    
+    HASIL DB 14Agu2026 = 2.062. KOLOM: `kesimpulan_penilaian_balai` di `mv_penandaan`. NILAI FILTER ''TMK MAYOR'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

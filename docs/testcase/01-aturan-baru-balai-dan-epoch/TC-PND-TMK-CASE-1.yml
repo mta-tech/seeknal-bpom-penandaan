@@ -1,0 +1,16 @@
+name: TC_PND_TMK_CASE_1
+scenario_id: TC-PND-TMK-CASE-1
+verification_date: '2026-08-14'
+description: 'TC-PND-TMK-CASE-1 — Gradasi TMK tersimpan dalam dua kapitalisasi; kesamaan persis membuang sebagian populasi.'
+turns:
+- prompt: 'berapa penandaan dengan kesimpulan balai TMK Minor?'
+  assert_contains:
+  - 'TMK'
+  assert_any_of:
+  -
+    - '9.325'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    -- BENAR: pola awalan, case-insensitive SELECT COUNT(*) FROM mv_penandaan WHERE upper(kesimpulan_penilaian_balai) LIKE ''TMK MINOR%''; -- SALAH A SELECT COUNT(*) FROM mv_penandaan WHERE kesimpulan_penilaian_balai = ''TMK MINOR''; -- SALAH B SELECT COUNT(*) FROM mv_penandaan WHERE kesimpulan_penilaian_balai = ''TMK Minor''; SQL BENAR: WHERE upper(kesimpulan_penilaian_balai) LIKE ''TMK MINOR%'' = 9.325. SQL SALAH A: = ''TMK MINOR'' (huruf besar) = 7.425. SQL SALAH B: = ''TMK Minor'' (huruf campur) = 1.900.;
+    
+    SEBAB: gradasi yang SAMA tersimpan dalam DUA KAPITALISASI berbeda. Memfilter salah satunya membuang sebagian besar atau sebagian kecil populasi — dan kedua angka salah itu sama-sama terlihat masuk akal. KODE FILTER: keluarga TMK dicocokkan dengan pola awalan DAN case-insensitive, tidak pernah dengan kesamaan persis. KENAPA MUDAH SALAH: aturan ini SUDAH benar di context sekarang — test ini menjaga agar tidak hilang saat versi berikutnya ditulis, bukan menguji sesuatu yang baru.'
